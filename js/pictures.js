@@ -44,6 +44,19 @@ var rawData = {
   ]
 };
 
+// Системные коды клавиатурных кнопок
+var keyCode = {
+  ESC: 27,
+  ENTER: 13
+};
+
+// Получаем элементы полноэкранного изображения
+var bigPicture = document.querySelector('.big-picture');
+var commentElements = bigPicture.querySelector('.social__comments');
+var commentElement = commentElements.querySelector('.social__comment');
+var bigPictureCloseButton = bigPicture.querySelector('.big-picture__cancel');
+var bigPictureTextInput = bigPicture.querySelector('.social__footer-text');
+
 // Получаем случайное число в диапозоне
 var getRandomNumber = function (min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -142,23 +155,10 @@ var createPictureFragment = function (pictures) {
   return fragment;
 };
 
-// Выполняем генерацию фотографий
-var generatePictures = function () {
-  var pictureListElements = document.querySelector('.pictures');
-
-  pictureListElements.appendChild(createPictureFragment(photoGeneratedData));
-};
-
-// Получаем элементы полноэкранного изображения
-var bigPicture = document.querySelector('.big-picture');
-var commentElements = bigPicture.querySelector('.social__comments');
-var commentElement = commentElements.querySelector('.social__comment');
-
 // Отрисовка полноэкранного изображения
 var initBigPicture = function () {
   setBigPicture(photoGeneratedData[0]);
 
-  bigPicture.classList.remove('hidden'); // Убираем класс hidden
   bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden'); // Скрываем счётчик комментариев
   bigPicture.querySelector('.social__comments-loader').classList.add('visually-hidden'); // Скрываем кнопку "показать больше"
 };
@@ -198,8 +198,63 @@ var setCommentData = function (comment) {
   return element;
 };
 
+// Обработчик кнопки ESC
+var documentEscPressHandler = function (evt) {
+  if (evt.keyCode === keyCode.ESC) {
+    bigPictureCloseClickHandler();
+  }
+};
+
+// Обработчик кнопки зарытия полноэкранного изображения
+var bigPictureButtonCloseHandler = function () {
+  bigPictureCloseClickHandler();
+};
+
+// Обработчик состояния фокуса в поле инпута комментария
+var bigPictureInputFocusHandler = function () {
+  document.removeEventListener('keydown', documentEscPressHandler);
+};
+
+// Обработчик выхода из фокуса поля инпута комментария
+var bigPictureInputBlurHandler = function () {
+  document.addEventListener('keydown', documentEscPressHandler);
+};
+
+// Открывает попап с полноэкранным изображением
+var bigPictureOpenClickHandler = function () {
+  initBigPicture();
+  bigPicture.classList.remove('hidden'); // Убираем класс hidden
+
+  document.addEventListener('keydown', documentEscPressHandler);
+  bigPictureCloseButton.addEventListener('click', bigPictureButtonCloseHandler);
+  bigPictureTextInput.addEventListener('focus', bigPictureInputFocusHandler);
+  bigPictureTextInput.addEventListener('blur', bigPictureInputBlurHandler);
+};
+
+// Закрывает попап с полноэкранным изображением
+var bigPictureCloseClickHandler = function () {
+  bigPicture.classList.add('hidden'); // Добавляем класс hidden
+
+  document.removeEventListener('keydown', documentEscPressHandler);
+  bigPictureCloseButton.removeEventListener('click', bigPictureButtonCloseHandler);
+  bigPictureTextInput.removeEventListener('focus', bigPictureInputFocusHandler);
+  bigPictureTextInput.removeEventListener('blur', bigPictureInputBlurHandler);
+};
+
+// Выполняем инициализацию страницы
+var init = function () {
+  var pictureListElements = document.querySelector('.pictures');
+
+  pictureListElements.appendChild(createPictureFragment(photoGeneratedData));
+
+  pictureListElements.addEventListener('click', function (evt) {
+    var target = evt.target;
+
+    if (target.classList.contains('picture__img')) {
+      bigPictureOpenClickHandler();
+    }
+  });
+};
+
 // Инициализация
-generatePictures();
-initBigPicture();
-
-
+init();
