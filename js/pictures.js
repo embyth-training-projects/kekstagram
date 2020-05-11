@@ -50,12 +50,40 @@ var keyCode = {
   ENTER: 13
 };
 
+// Минимальное и масксимальные параметры масштабирования изображения
+var scaleParams = {
+  MIN: 25,
+  MAX: 100,
+  DEFAULT: 100,
+  STEP: 25
+};
+
 // Получаем элементы полноэкранного изображения
 var bigPicture = document.querySelector('.big-picture');
 var commentElements = bigPicture.querySelector('.social__comments');
 var commentElement = commentElements.querySelector('.social__comment');
 var bigPictureCloseButton = bigPicture.querySelector('.big-picture__cancel');
 var bigPictureTextInput = bigPicture.querySelector('.social__footer-text');
+
+// Получаем элементы редактирования изображения
+var imageUpload = document.querySelector('.img-upload');
+var imageUploadForm = imageUpload.querySelector('#upload-select-image');
+var imageUploadInput = imageUpload.querySelector('#upload-file');
+var imageUploadOverlay = imageUpload.querySelector('.img-upload__overlay');
+var imageUploadCloseButton = imageUpload.querySelector('.img-upload__cancel');
+var imageUploadPreview = imageUpload.querySelector('.img-upload__preview img');
+
+// Получаем элементы управления масштабом изображения
+var buttonScaleDecrease = imageUpload.querySelector('.scale__control--smaller');
+var buttonScaleIncrease = imageUpload.querySelector('.scale__control--bigger');
+var inputScaleValue = imageUpload.querySelector('.scale__control--value');
+
+// Получаем элементы настроек эффекта
+var blockEffectLevel = imageUpload.querySelector('.effect-level');
+var inputEffectValue = blockEffectLevel.querySelector('.effect-level__value');
+var scaleEffectLevel = blockEffectLevel.querySelector('.effect-level__line');
+var pinEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
+var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
 
 // Получаем случайное число в диапозоне
 var getRandomNumber = function (min, max) {
@@ -198,10 +226,21 @@ var setCommentData = function (comment) {
   return element;
 };
 
+// Показать элемент
+var showElement = function (element) {
+  element.classList.remove('hidden');
+};
+
+// Спрятать элемент
+var hideElement = function (element) {
+  element.classList.add('hidden');
+};
+
 // Обработчик кнопки ESC
 var documentEscPressHandler = function (evt) {
   if (evt.keyCode === keyCode.ESC) {
     bigPictureCloseClickHandler();
+    uploadFileCloseHandler();
   }
 };
 
@@ -223,7 +262,7 @@ var bigPictureInputBlurHandler = function () {
 // Открывает попап с полноэкранным изображением
 var bigPictureOpenClickHandler = function () {
   initBigPicture();
-  bigPicture.classList.remove('hidden'); // Убираем класс hidden
+  showElement(bigPicture);
 
   document.addEventListener('keydown', documentEscPressHandler);
   bigPictureCloseButton.addEventListener('click', bigPictureButtonCloseHandler);
@@ -233,12 +272,79 @@ var bigPictureOpenClickHandler = function () {
 
 // Закрывает попап с полноэкранным изображением
 var bigPictureCloseClickHandler = function () {
-  bigPicture.classList.add('hidden'); // Добавляем класс hidden
+  hideElement(bigPicture);
 
   document.removeEventListener('keydown', documentEscPressHandler);
   bigPictureCloseButton.removeEventListener('click', bigPictureButtonCloseHandler);
   bigPictureTextInput.removeEventListener('focus', bigPictureInputFocusHandler);
   bigPictureTextInput.removeEventListener('blur', bigPictureInputBlurHandler);
+};
+
+// Обработчик кнопки закрытия редактирования фотографии
+var uploadImageCloseButtonClickHandler = function () {
+  uploadFileCloseHandler();
+};
+
+// Меняем размер изображения
+var resizeImage = function (scale) {
+  inputScaleValue.value = scale + '%';
+  imageUploadPreview.style.transform = ('scale(' + scale / 100 + ')');
+};
+
+// Блокируем кнопки увеличения и уменьшения изображения при максимальном и минимальном масштабе
+var disableScaleButtons = function () {
+  buttonScaleDecrease.disabled = parseInt(inputScaleValue.value, 10) === scaleParams.MIN;
+  buttonScaleIncrease.disabled = parseInt(inputScaleValue.value, 10) === scaleParams.MAX;
+};
+
+// Обработчик нажатия по кнопке уменьшения масштаба фотографии
+var buttonDecreaseClickHandler = function () {
+  var currentScale = parseInt(inputScaleValue.value, 10);
+
+  if (currentScale > scaleParams.MIN) {
+    currentScale -= scaleParams.STEP;
+  }
+
+  resizeImage(currentScale);
+  disableScaleButtons();
+};
+
+// Обработчик нажатия по кнопке увеличения масштаба фотографии
+var buttonIncreaseClickHandler = function () {
+  var currentScale = parseInt(inputScaleValue.value, 10);
+
+  if (currentScale < scaleParams.MAX) {
+    currentScale += scaleParams.STEP;
+  }
+
+  resizeImage(currentScale);
+  disableScaleButtons();
+};
+
+// Открывает форму редактирования изображения
+var uploadFileChangeHandler = function () {
+  showElement(imageUploadOverlay);
+  hideElement(blockEffectLevel);
+
+  document.addEventListener('keydown', documentEscPressHandler);
+  imageUploadCloseButton.addEventListener('click', uploadImageCloseButtonClickHandler);
+  buttonScaleDecrease.addEventListener('click', buttonDecreaseClickHandler);
+  buttonScaleIncrease.addEventListener('click', buttonIncreaseClickHandler);
+
+  resizeImage(scaleParams.DEFAULT);
+  disableScaleButtons();
+};
+
+// Закрывает форму редактирования изображения
+var uploadFileCloseHandler = function () {
+  hideElement(imageUploadOverlay);
+
+  document.removeEventListener('keydown', documentEscPressHandler);
+  imageUploadCloseButton.removeEventListener('click', uploadImageCloseButtonClickHandler);
+  buttonScaleDecrease.removeEventListener('click', buttonDecreaseClickHandler);
+  buttonScaleIncrease.removeEventListener('click', buttonIncreaseClickHandler);
+
+  imageUploadForm.reset();
 };
 
 // Выполняем инициализацию страницы
@@ -247,6 +353,7 @@ var init = function () {
 
   pictureListElements.appendChild(createPictureFragment(photoGeneratedData));
 
+  imageUploadInput.addEventListener('change', uploadFileChangeHandler);
   pictureListElements.addEventListener('click', function (evt) {
     var target = evt.target;
 
