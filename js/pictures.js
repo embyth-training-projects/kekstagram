@@ -3,15 +3,7 @@
 // Задаем константы
 var NUMBER_OF_PHOTOS = 25;
 var NUMBER_OF_AVATARS = 6;
-var MIN_LIKES = 15;
-var MAX_LIKES = 200;
-var PHOTO_FOLDER = 'photos/';
-var PHOTO_EXT = '.jpg';
-var AVATAR_FOLDER = 'img/avatar-';
-var AVATER_EXT = '.svg';
-var MIN_PHRASES = 1;
-var MAX_PHRASES = 2;
-var MAX_COMMENTS = 5;
+var DEPTH_EFFECT_MAX = 100;
 
 // Массивы с данными для фото
 var rawData = {
@@ -50,6 +42,37 @@ var keyCode = {
   ENTER: 13
 };
 
+// Количество лайков
+var likesNum = {
+  MIN: 15,
+  MAX: 200
+};
+
+// Количество фраз
+var phrasesNum = {
+  MIN: 1,
+  MAX: 2
+};
+
+// Количество комментариев
+var commentsNum = {
+  MIN: 0,
+  MAX: 5
+};
+
+// Параметры фотографий
+var photoProps = {
+  FOLDER: 'photos/',
+  EXT: '.jpg'
+};
+
+// Параметры аватарок
+var avatarProps = {
+  FOLDER: 'img/',
+  PREFIX: 'avatar-',
+  EXT: '.svg'
+};
+
 // Минимальное и масксимальные параметры масштабирования изображения
 var scaleParams = {
   MIN: 25,
@@ -83,7 +106,8 @@ var blockEffectLevel = imageUpload.querySelector('.effect-level');
 var inputEffectValue = blockEffectLevel.querySelector('.effect-level__value');
 var scaleEffectLevel = blockEffectLevel.querySelector('.effect-level__line');
 var pinEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
-var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
+var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__depth');
+var listEffect = imageUpload.querySelector('.effects__list');
 
 // Получаем случайное число в диапозоне
 var getRandomNumber = function (min, max) {
@@ -118,8 +142,8 @@ var setPhotoElementData = function (arrLength) {
 
   for (var i = 0; i < arrLength; i++) {
     photos.push({
-      url: PHOTO_FOLDER + photoUrls[i] + PHOTO_EXT,
-      likes: getRandomNumber(MIN_LIKES, MAX_LIKES + 1),
+      url: photoProps.FOLDER + photoUrls[i] + photoProps.EXT,
+      likes: getRandomNumber(likesNum.MIN, likesNum.MAX + 1),
       comments: setComments(),
       description: rawData.description[getRandomNumber(0, rawData.description.length)]
     });
@@ -131,12 +155,12 @@ var setPhotoElementData = function (arrLength) {
 // Генерируем массив строк для комментария
 var setComments = function () {
   var comments = [];
-  var numberOfComments = getRandomNumber(1, MAX_COMMENTS + 1);
+  var numberOfComments = getRandomNumber(commentsNum.MIN, commentsNum.MAX + 1);
   var avatars = getPhotoUrl(NUMBER_OF_AVATARS);
 
   for (var j = 0; j < numberOfComments; j++) {
     var message = '';
-    var numberOfPhrases = getRandomNumber(MIN_PHRASES, MAX_PHRASES + 1);
+    var numberOfPhrases = getRandomNumber(phrasesNum.MIN, phrasesNum.MAX + 1);
     var nameIndex = getRandomNumber(0, rawData.names.length);
 
     for (var i = 0; i < numberOfPhrases; i++) {
@@ -147,7 +171,7 @@ var setComments = function () {
 
     comments.push({
       message: message,
-      avatar: AVATAR_FOLDER + avatars[j] + AVATER_EXT,
+      avatar: avatarProps.FOLDER + avatarProps.PREFIX + avatars[j] + avatarProps.EXT,
       name: rawData.names[nameIndex]
     });
   }
@@ -321,6 +345,63 @@ var buttonIncreaseClickHandler = function () {
   disableScaleButtons();
 };
 
+var listEffectChangeHandler = function (evt) {
+  var effectName = evt.target.value;
+
+  depthEffectLevel.style.width = DEPTH_EFFECT_MAX + '%';
+  pinEffectLevel.style.left = DEPTH_EFFECT_MAX + '%';
+  inputEffectValue.value = DEPTH_EFFECT_MAX;
+  imageUploadPreview.className = '';
+  imageUploadPreview.style = '';
+
+  if (effectName === 'none') {
+    hideElement(blockEffectLevel);
+  } else {
+    showElement(blockEffectLevel);
+    imageUploadPreview.classList.add('effects__preview--' + effectName);
+  }
+
+  var currentScale = parseInt(inputScaleValue.value, 10);
+  resizeImage(currentScale);
+  disableScaleButtons();
+};
+
+var getDepthValue = function () {
+  var rect = scaleEffectLevel.getBoundingClientRect();
+
+  return pinEffectLevel.offsetLeft / rect.width;
+};
+
+var setFilters = function (value) {
+  return {
+    'chrome': 'greyscale(' + value + ')',
+    'sepia': 'sepia(' + value + ')',
+    'marvin': 'invert(' + value * 100 + '%)',
+    'phobos': 'blur(' + value * 3 + 'px)',
+    'heat': 'brightness(' + (value * 2 - 1) + ')'
+  };
+};
+
+var pinEffectLevelMouseUpHandler = function (evt) {
+  var filter = listEffect.querySelector('.effects__radio:checked').value;
+
+  evt.preventDefault();
+  imageUploadPreview.style.filter = setFilters(getDepthValue())[filter];
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Открывает форму редактирования изображения
 var uploadFileChangeHandler = function () {
   showElement(imageUploadOverlay);
@@ -330,6 +411,8 @@ var uploadFileChangeHandler = function () {
   imageUploadCloseButton.addEventListener('click', uploadImageCloseButtonClickHandler);
   buttonScaleDecrease.addEventListener('click', buttonDecreaseClickHandler);
   buttonScaleIncrease.addEventListener('click', buttonIncreaseClickHandler);
+  listEffect.addEventListener('change', listEffectChangeHandler);
+  pinEffectLevel.addEventListener('mouseup', pinEffectLevelMouseUpHandler);
 
   resizeImage(scaleParams.DEFAULT);
   disableScaleButtons();
@@ -343,6 +426,8 @@ var uploadFileCloseHandler = function () {
   imageUploadCloseButton.removeEventListener('click', uploadImageCloseButtonClickHandler);
   buttonScaleDecrease.removeEventListener('click', buttonDecreaseClickHandler);
   buttonScaleIncrease.removeEventListener('click', buttonIncreaseClickHandler);
+  listEffect.removeEventListener('change', listEffectChangeHandler);
+  pinEffectLevel.removeEventListener('mouseup', pinEffectLevelMouseUpHandler);
 
   imageUploadForm.reset();
 };
