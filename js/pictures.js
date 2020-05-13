@@ -73,12 +73,34 @@ var avatarProps = {
   EXT: '.svg'
 };
 
+// Параметры хэштегов
+var hashtagsProps = {
+  MAX: 5,
+  MAX_LENGTH: 20
+};
+
+// Параметры комментариев
+var commentProps = {
+  MAX_LENGTH: 140
+};
+
 // Минимальное и масксимальные параметры масштабирования изображения
 var scaleParams = {
   MIN: 25,
   MAX: 100,
   DEFAULT: 100,
   STEP: 25
+};
+
+// Сообщения о ошибке
+var errorMessages = {
+  OVER_MAX: 'Количество хэш-тегов не должно быть больше ' + hashtagsProps.MAX,
+  UNIQUE: 'Хэш-тег не может быть использован дважды',
+  TOO_LONG: 'Максимальная длина одно хэш-тега не должна превышать ' + hashtagsProps.MAX_LENGTH + ' символов',
+  TOO_SHORT: 'Хэш-тег не может состоять только из символа # (решётка)',
+  HASH_SYMBOL: 'Хэш-тег должен начинаться с символа # (решётка)',
+  SPACE_DELIMITER: 'Хэш-теги должны разделяться пробелами',
+  COMMENT_TOO_LONG: 'Комментарий не может составлять больше ' + commentProps.MAX_LENGTH + ' символов'
 };
 
 // Получаем элементы полноэкранного изображения
@@ -108,6 +130,10 @@ var scaleEffectLevel = blockEffectLevel.querySelector('.effect-level__line');
 var pinEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
 var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__depth');
 var listEffect = imageUpload.querySelector('.effects__list');
+
+// Получаем элементы ввода текста
+var inputHashtags = imageUpload.querySelector('.text__hashtags');
+var commentTextarea = imageUpload.querySelector('.text__description');
 
 // Получаем случайное число в диапозоне
 var getRandomNumber = function (min, max) {
@@ -345,6 +371,7 @@ var buttonIncreaseClickHandler = function () {
   disableScaleButtons();
 };
 
+// Обработчик изменения примененного эффекта
 var listEffectChangeHandler = function (evt) {
   var effectName = evt.target.value;
 
@@ -366,22 +393,25 @@ var listEffectChangeHandler = function (evt) {
   disableScaleButtons();
 };
 
+// Получение насищености эффекта
 var getDepthValue = function () {
   var rect = scaleEffectLevel.getBoundingClientRect();
 
   return pinEffectLevel.offsetLeft / rect.width;
 };
 
+// Установка фильтров
 var setFilters = function (value) {
   return {
     'chrome': 'greyscale(' + value + ')',
     'sepia': 'sepia(' + value + ')',
     'marvin': 'invert(' + value * 100 + '%)',
     'phobos': 'blur(' + value * 3 + 'px)',
-    'heat': 'brightness(' + (value * 2 - 1) + ')'
+    'heat': 'brightness(' + (value * 2 + 1) + ')'
   };
 };
 
+// Обработчик поднятия кнопки мыши вверх для ползунка
 var pinEffectLevelMouseUpHandler = function (evt) {
   var filter = listEffect.querySelector('.effects__radio:checked').value;
 
@@ -389,18 +419,78 @@ var pinEffectLevelMouseUpHandler = function (evt) {
   imageUploadPreview.style.filter = setFilters(getDepthValue())[filter];
 };
 
+// Проверяет на уникальность хэштег
+var isHashtagUnique = function (item, index, items) {
+  return items.indexOf(item) === index;
+};
 
+// Обработчик ввода хэштегов
+var inputHashtagsInputHandler = function () {
+  var hashtags = inputHashtags.value.trim().toLowerCase().split(' ');
 
+  if (!hashtags.length) {
+    return;
+  }
 
+  if (hashtags.length > hashtagsProps.MAX) {
+    inputHashtags.setCustomValidity(errorMessages.OVER_MAX);
+    return;
+  }
 
+  if (!hashtags.every(isHashtagUnique)) {
+    inputHashtags.setCustomValidity(errorMessages.UNIQUE);
+    return;
+  }
 
+  hashtags.forEach(function (hashtag) {
+    if (hashtag.length > hashtagsProps.MAX_LENGTH) {
+      inputHashtags.setCustomValidity(errorMessages.TOO_LONG);
+    } else if (hashtag === '#') {
+      inputHashtags.setCustomValidity(errorMessages.TOO_SHORT);
+    } else if (hashtag.charAt(0) !== '#') {
+      inputHashtags.setCustomValidity(errorMessages.HASH_SYMBOL);
+    } else if (hashtag.includes('#', 1)) {
+      inputHashtags.setCustomValidity(errorMessages.SPACE_DELIMITER);
+    } else {
+      inputHashtags.setCustomValidity('');
+    }
+  });
+};
 
+// Обработчик фокуса ввода хэштегов
+var inputHashtagsFocusHandler = function () {
+  document.removeEventListener('keydown', documentEscPressHandler);
+};
 
+// Обработчик выхода из фокуса ввода хэштегов
+var inputHashtagsBlurHandler = function () {
+  document.addEventListener('keydown', documentEscPressHandler);
+};
 
+// Обработчик ввода текста для комментария
+var commentTextareaInputHandler = function () {
+  var text = commentTextarea.value;
 
+  if (!text.length) {
+    return;
+  }
 
+  if (text.length > commentProps.MAX_LENGTH) {
+    commentTextarea.setCustomValidity(errorMessages.COMMENT_TOO_LONG);
+  } else {
+    commentTextarea.setCustomValidity('');
+  }
+};
 
+// Обработчик фокуса ввода комментария
+var commentTextareaFocusHandler = function () {
+  document.removeEventListener('keydown', documentEscPressHandler);
+};
 
+// Обработчик выхода из фокуса ввода комментария
+var commentTextareaBlurHandler = function () {
+  document.addEventListener('keydown', documentEscPressHandler);
+};
 
 // Открывает форму редактирования изображения
 var uploadFileChangeHandler = function () {
@@ -413,6 +503,12 @@ var uploadFileChangeHandler = function () {
   buttonScaleIncrease.addEventListener('click', buttonIncreaseClickHandler);
   listEffect.addEventListener('change', listEffectChangeHandler);
   pinEffectLevel.addEventListener('mouseup', pinEffectLevelMouseUpHandler);
+  inputHashtags.addEventListener('input', inputHashtagsInputHandler);
+  inputHashtags.addEventListener('focus', inputHashtagsFocusHandler);
+  inputHashtags.addEventListener('blur', inputHashtagsBlurHandler);
+  commentTextarea.addEventListener('input', commentTextareaInputHandler);
+  commentTextarea.addEventListener('focus', commentTextareaFocusHandler);
+  commentTextarea.addEventListener('blur', commentTextareaBlurHandler);
 
   resizeImage(scaleParams.DEFAULT);
   disableScaleButtons();
@@ -428,6 +524,12 @@ var uploadFileCloseHandler = function () {
   buttonScaleIncrease.removeEventListener('click', buttonIncreaseClickHandler);
   listEffect.removeEventListener('change', listEffectChangeHandler);
   pinEffectLevel.removeEventListener('mouseup', pinEffectLevelMouseUpHandler);
+  inputHashtags.removeEventListener('input', inputHashtagsInputHandler);
+  inputHashtags.removeEventListener('focus', inputHashtagsFocusHandler);
+  inputHashtags.removeEventListener('blur', inputHashtagsBlurHandler);
+  commentTextarea.removeEventListener('input', commentTextareaInputHandler);
+  commentTextarea.removeEventListener('focus', commentTextareaFocusHandler);
+  commentTextarea.removeEventListener('blur', commentTextareaBlurHandler);
 
   imageUploadForm.reset();
 };
