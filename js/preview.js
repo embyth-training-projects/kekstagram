@@ -7,6 +7,7 @@
   var commentElement = commentElements.querySelector('.social__comment');
   var bigPictureCloseButton = bigPicture.querySelector('.big-picture__cancel');
   var bigPictureTextInput = bigPicture.querySelector('.social__footer-text');
+  var pictureListElements = document.querySelector('.pictures');
 
   // Удаляем ненужные DOM элементы
   var clearElements = function (element) {
@@ -76,10 +77,27 @@
     document.addEventListener('keydown', closeBigPictureOnPressEsc);
   };
 
+  // Открыть окно при нажатии кнопки Enter
+  var openBigPictureOnKeyDown = function (evt) {
+    window.util.isEnterKey(evt, bigPictureOpenClickHandler);
+  };
+
+  // Открыть окно при клике
+  var openBigPictureOnClickHandler = function (evt) {
+    var target = evt.target;
+
+    if (target.classList.contains('picture__img')) {
+      bigPictureOpenClickHandler();
+    }
+  };
+
   // Открывает попап с полноэкранным изображением
-  window.bigPictureOpenClickHandler = function () {
+  var bigPictureOpenClickHandler = function () {
     initBigPicture();
     window.util.showElement(bigPicture);
+
+    pictureListElements.removeEventListener('click', openBigPictureOnClickHandler);
+    pictureListElements.removeEventListener('keydown', openBigPictureOnKeyDown);
 
     document.addEventListener('keydown', closeBigPictureOnPressEsc);
     bigPictureCloseButton.addEventListener('click', bigPictureButtonCloseHandler);
@@ -92,10 +110,16 @@
   var bigPictureCloseClickHandler = function () {
     window.util.hideElement(bigPicture);
 
+    pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
+    pictureListElements.addEventListener('click', openBigPictureOnClickHandler);
+
     document.removeEventListener('keydown', closeBigPictureOnPressEsc);
     bigPictureCloseButton.removeEventListener('click', bigPictureButtonCloseHandler);
     bigPictureCloseButton.removeEventListener('keydown', closeBigPictureOnKeyDown);
     bigPictureTextInput.removeEventListener('focus', bigPictureInputFocusHandler);
     bigPictureTextInput.removeEventListener('blur', bigPictureInputBlurHandler);
   };
+
+  pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
+  pictureListElements.addEventListener('click', openBigPictureOnClickHandler);
 })();

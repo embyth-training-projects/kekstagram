@@ -2,25 +2,25 @@
 
 (function () {
   // Получаем элементы редактирования изображения
-  var imageUpload = document.querySelector('.img-upload');
-  var imageUploadForm = imageUpload.querySelector('#upload-select-image');
-  var imageUploadInput = imageUpload.querySelector('#upload-file');
-  var imageUploadOverlay = imageUpload.querySelector('.img-upload__overlay');
-  var imageUploadCloseButton = imageUpload.querySelector('.img-upload__cancel');
-  var imageUploadPreview = imageUpload.querySelector('.img-upload__preview img');
+  window.imageUpload = document.querySelector('.img-upload');
+  var imageUploadForm = window.imageUpload.querySelector('#upload-select-image');
+  var imageUploadInput = window.imageUpload.querySelector('#upload-file');
+  var imageUploadOverlay = window.imageUpload.querySelector('.img-upload__overlay');
+  var imageUploadCloseButton = window.imageUpload.querySelector('.img-upload__cancel');
+  var imageUploadPreview = window.imageUpload.querySelector('.img-upload__preview img');
 
   // Получаем элементы управления масштабом изображения
-  var buttonScaleDecrease = imageUpload.querySelector('.scale__control--smaller');
-  var buttonScaleIncrease = imageUpload.querySelector('.scale__control--bigger');
-  var inputScaleValue = imageUpload.querySelector('.scale__control--value');
+  var buttonScaleDecrease = window.imageUpload.querySelector('.scale__control--smaller');
+  var buttonScaleIncrease = window.imageUpload.querySelector('.scale__control--bigger');
+  var inputScaleValue = window.imageUpload.querySelector('.scale__control--value');
 
   // Получаем элементы настроек эффекта
-  var blockEffectLevel = imageUpload.querySelector('.effect-level');
+  var blockEffectLevel = window.imageUpload.querySelector('.effect-level');
   var inputEffectValue = blockEffectLevel.querySelector('.effect-level__value');
   var scaleEffectLevel = blockEffectLevel.querySelector('.effect-level__line');
   var pinEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
   var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__depth');
-  var listEffect = imageUpload.querySelector('.effects__list');
+  var listEffect = window.imageUpload.querySelector('.effects__list');
   var DEPTH_EFFECT_MAX = 100;
   // Минимальное и масксимальные параметры масштабирования изображения
   var scaleParams = {
@@ -31,8 +31,8 @@
   };
 
   // Получаем элементы ввода текста
-  var inputHashtags = imageUpload.querySelector('.text__hashtags');
-  var commentTextarea = imageUpload.querySelector('.text__description');
+  var inputHashtags = window.imageUpload.querySelector('.text__hashtags');
+  var commentTextarea = window.imageUpload.querySelector('.text__description');
 
   // Меняем размер изображения
   var resizeImage = function (scale) {
@@ -119,28 +119,28 @@
   };
 
   // Закрыть окно при нажатии кнопки Esc
-  var closeFormOnPressEsc = function (evt) {
+  var uploadImageEscPressHandler = function (evt) {
     window.util.isEscKey(evt, uploadFileCloseHandler);
   };
 
   // Обработчик фокуса ввода хэштегов
   var inputHashtagsFocusHandler = function () {
-    document.removeEventListener('keydown', closeFormOnPressEsc);
+    document.removeEventListener('keydown', uploadImageEscPressHandler);
   };
 
   // Обработчик выхода из фокуса ввода хэштегов
   var inputHashtagsBlurHandler = function () {
-    document.addEventListener('keydown', closeFormOnPressEsc);
+    document.addEventListener('keydown', uploadImageEscPressHandler);
   };
 
   // Обработчик фокуса ввода комментария
   var commentTextareaFocusHandler = function () {
-    document.removeEventListener('keydown', closeFormOnPressEsc);
+    document.removeEventListener('keydown', uploadImageEscPressHandler);
   };
 
   // Обработчик выхода из фокуса ввода комментария
   var commentTextareaBlurHandler = function () {
-    document.addEventListener('keydown', closeFormOnPressEsc);
+    document.addEventListener('keydown', uploadImageEscPressHandler);
   };
 
   // Обработчик кнопки закрытия редактирования фотографии
@@ -149,11 +149,11 @@
   };
 
   // Открывает форму редактирования изображения
-  var uploadFileChangeHandler = function () {
+  var uploadImageChangeHandler = function () {
     window.util.showElement(imageUploadOverlay);
     window.util.hideElement(blockEffectLevel);
 
-    document.addEventListener('keydown', closeFormOnPressEsc);
+    document.addEventListener('keydown', uploadImageEscPressHandler);
     imageUploadCloseButton.addEventListener('click', uploadImageCloseButtonClickHandler);
     buttonScaleDecrease.addEventListener('click', buttonDecreaseClickHandler);
     buttonScaleIncrease.addEventListener('click', buttonIncreaseClickHandler);
@@ -174,7 +174,7 @@
   var uploadFileCloseHandler = function () {
     window.util.hideElement(imageUploadOverlay);
 
-    document.removeEventListener('keydown', closeFormOnPressEsc);
+    document.removeEventListener('keydown', uploadImageEscPressHandler);
     imageUploadCloseButton.removeEventListener('click', uploadImageCloseButtonClickHandler);
     buttonScaleDecrease.removeEventListener('click', buttonDecreaseClickHandler);
     buttonScaleIncrease.removeEventListener('click', buttonIncreaseClickHandler);
@@ -190,5 +190,5 @@
     imageUploadForm.reset();
   };
 
-  imageUploadInput.addEventListener('change', uploadFileChangeHandler);
+  imageUploadInput.addEventListener('change', uploadImageChangeHandler);
 })();

@@ -26,22 +26,7 @@
     return fragment;
   };
 
-  // Открыть окно при нажатии кнопки Enter
-  var openBigPictureOnKeyDown = function (evt) {
-    window.util.isEnterKey(evt, window.bigPictureOpenClickHandler);
-  };
-
   // Выполняем инициализацию страницы
   var pictureListElements = document.querySelector('.pictures');
-
   pictureListElements.appendChild(createPictureFragment(window.photoGeneratedData));
-  pictureListElements.addEventListener('click', function (evt) {
-    var target = evt.target;
-
-    if (target.classList.contains('picture__img')) {
-      window.bigPictureOpenClickHandler();
-    }
-  });
-
-  pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
 })();

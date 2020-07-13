@@ -2,9 +2,8 @@
 
 (function () {
   // Получаем элементы ввода текста
-  var imageUpload = document.querySelector('.img-upload');
-  var inputHashtags = imageUpload.querySelector('.text__hashtags');
-  var commentTextarea = imageUpload.querySelector('.text__description');
+  var inputHashtags = window.imageUpload.querySelector('.text__hashtags');
+  var commentTextarea = window.imageUpload.querySelector('.text__description');
 
   // Параметры хэштегов
   var hashtagsProps = {
