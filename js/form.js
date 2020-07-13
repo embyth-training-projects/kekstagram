@@ -17,66 +17,22 @@
   // Получаем элементы настроек эффекта
   var blockEffectLevel = window.imageUpload.querySelector('.effect-level');
   var inputEffectValue = blockEffectLevel.querySelector('.effect-level__value');
-  var scaleEffectLevel = blockEffectLevel.querySelector('.effect-level__line');
   var pinEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
   var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__depth');
   var listEffect = window.imageUpload.querySelector('.effects__list');
-  var DEPTH_EFFECT_MAX = 100;
-  // Минимальное и масксимальные параметры масштабирования изображения
-  var scaleParams = {
-    MIN: 25,
-    MAX: 100,
-    DEFAULT: 100,
-    STEP: 25
-  };
 
   // Получаем элементы ввода текста
   var inputHashtags = window.imageUpload.querySelector('.text__hashtags');
   var commentTextarea = window.imageUpload.querySelector('.text__description');
 
-  // Меняем размер изображения
-  var resizeImage = function (scale) {
-    inputScaleValue.value = scale + '%';
-    imageUploadPreview.style.transform = ('scale(' + scale / 100 + ')');
-  };
-
-  // Блокируем кнопки увеличения и уменьшения изображения при максимальном и минимальном масштабе
-  var disableScaleButtons = function () {
-    buttonScaleDecrease.disabled = parseInt(inputScaleValue.value, 10) === scaleParams.MIN;
-    buttonScaleIncrease.disabled = parseInt(inputScaleValue.value, 10) === scaleParams.MAX;
-  };
-
-  // Обработчик нажатия по кнопке уменьшения масштаба фотографии
-  var buttonDecreaseClickHandler = function () {
-    var currentScale = parseInt(inputScaleValue.value, 10);
-
-    if (currentScale > scaleParams.MIN) {
-      currentScale -= scaleParams.STEP;
-    }
-
-    resizeImage(currentScale);
-    disableScaleButtons();
-  };
-
-  // Обработчик нажатия по кнопке увеличения масштаба фотографии
-  var buttonIncreaseClickHandler = function () {
-    var currentScale = parseInt(inputScaleValue.value, 10);
-
-    if (currentScale < scaleParams.MAX) {
-      currentScale += scaleParams.STEP;
-    }
-
-    resizeImage(currentScale);
-    disableScaleButtons();
-  };
-
   // Обработчик изменения примененного эффекта
   var listEffectChangeHandler = function (evt) {
     var effectName = evt.target.value;
 
-    depthEffectLevel.style.width = DEPTH_EFFECT_MAX + '%';
-    pinEffectLevel.style.left = DEPTH_EFFECT_MAX + '%';
-    inputEffectValue.value = DEPTH_EFFECT_MAX;
+    var depthEffect = window.CONSTANTS.IMAGE_UPLOAD.DEPTH_PARAMS;
+    depthEffectLevel.style.width = depthEffect.DEFAULT + '%';
+    pinEffectLevel.style.left = depthEffect.DEFAULT + '%';
+    inputEffectValue.value = depthEffect.DEFAULT;
     imageUploadPreview.className = '';
     imageUploadPreview.style = '';
 
@@ -85,37 +41,12 @@
     } else {
       window.util.showElement(blockEffectLevel);
       imageUploadPreview.classList.add('effects__preview--' + effectName);
+      window.setFilter(imageUploadPreview, depthEffect.DEFAULT);
     }
 
     var currentScale = parseInt(inputScaleValue.value, 10);
-    resizeImage(currentScale);
-    disableScaleButtons();
-  };
-
-  // Получение насищености эффекта
-  var getDepthValue = function () {
-    var rect = scaleEffectLevel.getBoundingClientRect();
-
-    return pinEffectLevel.offsetLeft / rect.width;
-  };
-
-  // Установка фильтров
-  var setFilters = function (value) {
-    return {
-      'chrome': 'greyscale(' + value + ')',
-      'sepia': 'sepia(' + value + ')',
-      'marvin': 'invert(' + value * 100 + '%)',
-      'phobos': 'blur(' + value * 3 + 'px)',
-      'heat': 'brightness(' + (value * 2 + 1) + ')'
-    };
-  };
-
-  // Обработчик поднятия кнопки мыши вверх для ползунка
-  var pinEffectLevelMouseUpHandler = function (evt) {
-    var filter = listEffect.querySelector('.effects__radio:checked').value;
-
-    evt.preventDefault();
-    imageUploadPreview.style.filter = setFilters(getDepthValue())[filter];
+    window.resizeImage(currentScale);
+    window.disableScaleButtons();
   };
 
   // Закрыть окно при нажатии кнопки Esc
@@ -154,11 +85,12 @@
     window.util.hideElement(blockEffectLevel);
 
     document.addEventListener('keydown', uploadImageEscPressHandler);
+    pinEffectLevel.addEventListener('mousedown', window.moveEffectSlider);
     imageUploadCloseButton.addEventListener('click', uploadImageCloseButtonClickHandler);
-    buttonScaleDecrease.addEventListener('click', buttonDecreaseClickHandler);
-    buttonScaleIncrease.addEventListener('click', buttonIncreaseClickHandler);
+    buttonScaleDecrease.addEventListener('click', window.buttonDecreaseClickHandler);
+    buttonScaleIncrease.addEventListener('click', window.buttonIncreaseClickHandler);
     listEffect.addEventListener('change', listEffectChangeHandler);
-    pinEffectLevel.addEventListener('mouseup', pinEffectLevelMouseUpHandler);
+    pinEffectLevel.addEventListener('mouseup', window.pinEffectLevelMouseUpHandler);
     inputHashtags.addEventListener('input', window.inputHashtagsInputHandler);
     inputHashtags.addEventListener('focus', inputHashtagsFocusHandler);
     inputHashtags.addEventListener('blur', inputHashtagsBlurHandler);
@@ -166,8 +98,8 @@
     commentTextarea.addEventListener('focus', commentTextareaFocusHandler);
     commentTextarea.addEventListener('blur', commentTextareaBlurHandler);
 
-    resizeImage(scaleParams.DEFAULT);
-    disableScaleButtons();
+    window.resizeImage(window.CONSTANTS.IMAGE_UPLOAD.SCALE_PARAMS.DEFAULT);
+    window.disableScaleButtons();
   };
 
   // Закрывает форму редактирования изображения
@@ -175,11 +107,12 @@
     window.util.hideElement(imageUploadOverlay);
 
     document.removeEventListener('keydown', uploadImageEscPressHandler);
+    pinEffectLevel.removeEventListener('mousedown', window.moveEffectSlider);
     imageUploadCloseButton.removeEventListener('click', uploadImageCloseButtonClickHandler);
-    buttonScaleDecrease.removeEventListener('click', buttonDecreaseClickHandler);
-    buttonScaleIncrease.removeEventListener('click', buttonIncreaseClickHandler);
+    buttonScaleDecrease.removeEventListener('click', window.buttonDecreaseClickHandler);
+    buttonScaleIncrease.removeEventListener('click', window.buttonIncreaseClickHandler);
     listEffect.removeEventListener('change', listEffectChangeHandler);
-    pinEffectLevel.removeEventListener('mouseup', pinEffectLevelMouseUpHandler);
+    pinEffectLevel.removeEventListener('mouseup', window.pinEffectLevelMouseUpHandler);
     inputHashtags.removeEventListener('input', window.inputHashtagsInputHandler);
     inputHashtags.removeEventListener('focus', inputHashtagsFocusHandler);
     inputHashtags.removeEventListener('blur', inputHashtagsBlurHandler);

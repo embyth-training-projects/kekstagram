@@ -8,6 +8,19 @@
       ESC: 27,
       ENTER: 13
     },
+    IMAGE_UPLOAD: {
+      SCALE_PARAMS: {
+        MIN: 25,
+        MAX: 100,
+        DEFAULT: 100,
+        STEP: 25
+      },
+      DEPTH_PARAMS: {
+        MIN: 0,
+        MAX: 100,
+        DEFAULT: 75
+      }
+    }
   };
 
   // Заносим методы в глобальную область видимости
@@ -43,6 +56,14 @@
     // Спрятать элемент
     hideElement: function (element) {
       element.classList.add('hidden');
-    }
+    },
+    // Показываем скролл на странице
+    showBodyScroll: function () {
+      document.body.style.overflowY = 'auto';
+    },
+    // Прячем скролл на странице
+    hideBodyScroll: function () {
+      document.body.style.overflowY = 'hidden';
+    },
   };
 })();

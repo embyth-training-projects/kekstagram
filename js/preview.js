@@ -8,6 +8,7 @@
   var bigPictureCloseButton = bigPicture.querySelector('.big-picture__cancel');
   var bigPictureTextInput = bigPicture.querySelector('.social__footer-text');
   var pictureListElements = document.querySelector('.pictures');
+  var generetedPictures = document.querySelectorAll('.picture');
 
   // Удаляем ненужные DOM элементы
   var clearElements = function (element) {
@@ -34,8 +35,8 @@
   };
 
   // Отрисовка полноэкранного изображения
-  var initBigPicture = function () {
-    setBigPicture(window.photoGeneratedData[0]);
+  var initBigPicture = function (index) {
+    setBigPicture(window.photoGeneratedData[index]);
 
     bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden'); // Скрываем счётчик комментариев
     bigPicture.querySelector('.social__comments-loader').classList.add('visually-hidden'); // Скрываем кнопку "показать больше"
@@ -86,6 +87,12 @@
   var openBigPictureOnClickHandler = function (evt) {
     var target = evt.target;
 
+    for (var index = 0; index < generetedPictures.length; index++) {
+      if (target.parentNode === generetedPictures[index]) {
+        initBigPicture(index);
+      }
+    }
+
     if (target.classList.contains('picture__img')) {
       bigPictureOpenClickHandler();
     }
@@ -93,8 +100,8 @@
 
   // Открывает попап с полноэкранным изображением
   var bigPictureOpenClickHandler = function () {
-    initBigPicture();
     window.util.showElement(bigPicture);
+    window.util.hideBodyScroll();
 
     pictureListElements.removeEventListener('click', openBigPictureOnClickHandler);
     pictureListElements.removeEventListener('keydown', openBigPictureOnKeyDown);
@@ -109,6 +116,7 @@
   // Закрывает попап с полноэкранным изображением
   var bigPictureCloseClickHandler = function () {
     window.util.hideElement(bigPicture);
+    window.util.showBodyScroll();
 
     pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
     pictureListElements.addEventListener('click', openBigPictureOnClickHandler);

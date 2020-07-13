@@ -50,7 +50,7 @@
 
   // Количество комментариев
   var commentsNum = {
-    MIN: 0,
+    MIN: 1,
     MAX: 5
   };
 
