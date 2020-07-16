@@ -65,5 +65,36 @@
     hideBodyScroll: function () {
       document.body.style.overflowY = 'hidden';
     },
+    // Перемешиваем массив
+    shuffleArray: function (array) {
+      // Перемешиваем массив в случайном порядке
+      for (var j = 0; j < array.length; j++) {
+        var random = Math.floor(Math.random() * (j + 1)); // Получаем случайное число
+        var temp = array[random]; // Присваиваем временно случайное число из массива
+
+        array[random] = array[j]; // Присваиваем случайному индексу порядковый номер числа из массива
+        array[j] = temp; // Порядковому номеру отдаем временное значение
+      }
+
+      return array;
+    },
+    // Показ ошибки
+    showError: function (errorMessage) {
+      var node = document.createElement('div');
+
+      node.style.zIndex = 100;
+      node.style.width = '100%';
+      node.style.margin = '0 auto';
+      node.style.padding = '5px 0';
+      node.style.textAlign = 'center';
+      node.style.position = 'absolute';
+      node.style.left = 0;
+      node.style.top = 0;
+      node.style.backgroundColor = 'red';
+      node.style.fontSize = '30px';
+
+      node.textContent = errorMessage;
+      document.body.insertAdjacentElement('afterbegin', node);
+    }
   };
 })();

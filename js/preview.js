@@ -8,7 +8,6 @@
   var bigPictureCloseButton = bigPicture.querySelector('.big-picture__cancel');
   var bigPictureTextInput = bigPicture.querySelector('.social__footer-text');
   var pictureListElements = document.querySelector('.pictures');
-  var generetedPictures = document.querySelectorAll('.picture');
 
   // Удаляем ненужные DOM элементы
   var clearElements = function (element) {
@@ -36,7 +35,7 @@
 
   // Отрисовка полноэкранного изображения
   var initBigPicture = function (index) {
-    setBigPicture(window.photoGeneratedData[index]);
+    setBigPicture(window.photoData[index]);
 
     bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden'); // Скрываем счётчик комментариев
     bigPicture.querySelector('.social__comments-loader').classList.add('visually-hidden'); // Скрываем кнопку "показать больше"
@@ -51,6 +50,19 @@
     element.querySelector('.social__text').textContent = comment.message;
 
     return element;
+  };
+
+  // Открыть окно при клике
+  var openBigPictureOnClickHandler = function (evt) {
+    var generetedPictures = document.querySelectorAll('.picture');
+    var target = evt.target;
+
+    for (var i = 0; i < generetedPictures.length; i++) {
+      if (target.parentNode === generetedPictures[i]) {
+        initBigPicture(i);
+        bigPictureOpenClickHandler();
+      }
+    }
   };
 
   // Закрыть окно при нажатии кнопки Enter
@@ -81,21 +93,6 @@
   // Открыть окно при нажатии кнопки Enter
   var openBigPictureOnKeyDown = function (evt) {
     window.util.isEnterKey(evt, bigPictureOpenClickHandler);
-  };
-
-  // Открыть окно при клике
-  var openBigPictureOnClickHandler = function (evt) {
-    var target = evt.target;
-
-    for (var index = 0; index < generetedPictures.length; index++) {
-      if (target.parentNode === generetedPictures[index]) {
-        initBigPicture(index);
-      }
-    }
-
-    if (target.classList.contains('picture__img')) {
-      bigPictureOpenClickHandler();
-    }
   };
 
   // Открывает попап с полноэкранным изображением

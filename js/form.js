@@ -79,10 +79,17 @@
     uploadFileCloseHandler();
   };
 
+  // Обработчик отправки формы загрузки изображения
+  var uploadFormSubmitHandler = function (evt) {
+    evt.preventDefault();
+    window.backend.save(new FormData(imageUploadForm), uploadFileCloseHandler, window.util.showError);
+  };
+
   // Открывает форму редактирования изображения
   var uploadImageChangeHandler = function () {
     window.util.showElement(imageUploadOverlay);
     window.util.hideElement(blockEffectLevel);
+    window.util.hideBodyScroll();
 
     document.addEventListener('keydown', uploadImageEscPressHandler);
     pinEffectLevel.addEventListener('mousedown', window.moveEffectSlider);
@@ -97,6 +104,7 @@
     commentTextarea.addEventListener('input', window.commentTextareaInputHandler);
     commentTextarea.addEventListener('focus', commentTextareaFocusHandler);
     commentTextarea.addEventListener('blur', commentTextareaBlurHandler);
+    imageUploadForm.addEventListener('submit', uploadFormSubmitHandler);
 
     window.resizeImage(window.CONSTANTS.IMAGE_UPLOAD.SCALE_PARAMS.DEFAULT);
     window.disableScaleButtons();
@@ -105,6 +113,7 @@
   // Закрывает форму редактирования изображения
   var uploadFileCloseHandler = function () {
     window.util.hideElement(imageUploadOverlay);
+    window.util.showBodyScroll();
 
     document.removeEventListener('keydown', uploadImageEscPressHandler);
     pinEffectLevel.removeEventListener('mousedown', window.moveEffectSlider);
@@ -119,6 +128,7 @@
     commentTextarea.removeEventListener('input', window.commentTextareaInputHandler);
     commentTextarea.removeEventListener('focus', commentTextareaFocusHandler);
     commentTextarea.removeEventListener('blur', commentTextareaBlurHandler);
+    imageUploadForm.removeEventListener('submit', uploadFormSubmitHandler);
 
     imageUploadForm.reset();
   };

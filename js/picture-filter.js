@@ -2,6 +2,10 @@
 
 (function () {
   window.setFilter = function (image, value) {
+    var effectValue = document.querySelector('.effect-level__value');
+    effectValue.step = '0.1';
+    effectValue.value = value;
+
     var denominatorForChromeAndSepia = 100;
     var denominatorForPhobosAndHeat = 33.3;
 

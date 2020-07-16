@@ -3,30 +3,37 @@
 (function () {
   // Получаем шаблон
   var pictureElementTemplate = document.querySelector('#picture').content.querySelector('.picture');
+  var pictureElement = document.querySelector('.pictures');
 
   // Создаем элемент из шаблона и присваиваем ему информацию из массива
   var createPictureElement = function (picture) {
-    var pictureElement = pictureElementTemplate.cloneNode(true);
+    var pictureNode = pictureElementTemplate.cloneNode(true);
 
-    pictureElement.querySelector('.picture__img').src = picture.url;
-    pictureElement.querySelector('.picture__likes').textContent = picture.likes;
-    pictureElement.querySelector('.picture__comments').textContent = picture.comments.length;
+    pictureNode.querySelector('.picture__img').src = picture.url;
+    pictureNode.querySelector('.picture__likes').textContent = picture.likes;
+    pictureNode.querySelector('.picture__comments').textContent = picture.comments.length;
 
-    return pictureElement;
+    return pictureNode;
   };
 
-  // Создаем DOM-элементы фотографий
-  var createPictureFragment = function (pictures) {
+  // Отрисовывает фотографии
+  var renderPhotos = function (photos) {
     var fragment = document.createDocumentFragment();
 
-    pictures.forEach(function (item) {
+    photos.forEach(function (item) {
       fragment.appendChild(createPictureElement(item));
     });
 
-    return fragment;
+    pictureElement.appendChild(fragment);
   };
 
-  // Выполняем инициализацию страницы
-  var pictureListElements = document.querySelector('.pictures');
-  pictureListElements.appendChild(createPictureFragment(window.photoGeneratedData));
+  // Обработчик загрузки данных для фото с сервера
+  var onLoad = function (data) {
+    window.photoData = window.util.shuffleArray(data);
+    // Выполняем отрисовку фотографий
+    renderPhotos(window.photoData);
+  };
+
+  // Генирируем данные для фотографий из ответа сервера
+  window.backend.load(onLoad, window.util.showError);
 })();
