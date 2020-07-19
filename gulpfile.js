@@ -1,43 +1,15 @@
 'use strict';
 
 var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var rename = require('gulp-rename');
-var gulpif = require('gulp-if');
 var newer = require('gulp-newer');
-var htmlmin = require('gulp-htmlmin');
 var zip = require('gulp-zip');
 var del = require('del');
-var pipeline = require('readable-stream').pipeline;
 var browserSync = require('browser-sync').create('Local Server');
 
-const isDev = !process.env.NODE_ENV;
-const isProd = !!process.env.NODE_ENV;
-
-gulp.task('scripts', function () {
-  return pipeline(
-    gulp.src('./js/**/*.js'),
-    newer('./build/js/'),
-    gulp.dest('./build/js')
-  );
-});
-
-gulp.task('html', function () {
-  return gulp.src('./*.html')
-    .pipe(newer('./build/'))
-    .pipe(gulpif(
-      isProd,
-      htmlmin({
-        collapseInlineTagWhitespace: true,
-        collapseWhitespace: true,
-        removeComments: true
-      })
-    ))
-    .pipe(gulp.dest('./build/'));
-});
-
 gulp.task('copy', function () {
-  return gulp.src(['favicon.ico', './css/**/*.css', './fonts/**/*.{woff,woff2,ttf,eot,svg}', './img/**/*.{jpg,jpeg,svg,gif,png}', './photos/**/*.{jpg,jpeg,svg,gif,png}'], { base: '.' })
+  return gulp.src(['css/**/*', 'fonts/**/*', 'img/**/*', 'photos/**/*', 'js/**/*', '*.html', 'favicon.ico'], {
+      base: '.'
+    })
     .pipe(newer('./build/'))
     .pipe(gulp.dest('./build/'));
 });
@@ -62,11 +34,10 @@ gulp.task('server', function (done) {
 });
 
 gulp.task('watch', function () {
-  gulp.watch('./**/*.html').on('all', gulp.series('html', browserSync.reload));
-  gulp.watch('./js/**/*.js').on('all', gulp.series('scripts', browserSync.reload));
+  gulp.watch('./**/*').on('all', gulp.series('copy', browserSync.reload));
 });
 
-gulp.task('build', gulp.series('clean', gulp.parallel('copy', 'html', 'scripts')));
+gulp.task('build', gulp.series('clean', gulp.parallel('copy')));
 
 gulp.task('default', gulp.series('build', 'server', 'watch'));
 
