@@ -20,6 +20,9 @@
         MAX: 100,
         DEFAULT: 75
       }
+    },
+    GALLERY: {
+      NEW_QUANTITY: 10
     }
   };
 
@@ -67,15 +70,12 @@
     },
     // Перемешиваем массив
     shuffleArray: function (array) {
-      // Перемешиваем массив в случайном порядке
-      for (var j = 0; j < array.length; j++) {
-        var random = Math.floor(Math.random() * (j + 1)); // Получаем случайное число
-        var temp = array[random]; // Присваиваем временно случайное число из массива
-
-        array[random] = array[j]; // Присваиваем случайному индексу порядковый номер числа из массива
-        array[j] = temp; // Порядковому номеру отдаем временное значение
+      for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
       }
-
       return array;
     },
     // Показ ошибки

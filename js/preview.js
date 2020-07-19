@@ -34,7 +34,11 @@
   };
 
   // Отрисовка полноэкранного изображения
-  var initBigPicture = function (index) {
+  var initBigPicture = function (photo) {
+    var index = window.photoData.findIndex(function (item) {
+      return item.url === photo.querySelector('img').getAttribute('src');
+    });
+
     setBigPicture(window.photoData[index]);
 
     bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden'); // Скрываем счётчик комментариев
@@ -54,13 +58,14 @@
 
   // Открыть окно при клике
   var openBigPictureOnClickHandler = function (evt) {
-    var generetedPictures = document.querySelectorAll('.picture');
     var target = evt.target;
 
-    for (var i = 0; i < generetedPictures.length; i++) {
-      if (target.parentNode === generetedPictures[i]) {
-        initBigPicture(i);
+    while (target.parentNode !== evt.currentTarget) {
+      target = target.parentNode;
+      if (target.classList.contains('picture')) {
+        initBigPicture(target);
         bigPictureOpenClickHandler();
+        return;
       }
     }
   };
