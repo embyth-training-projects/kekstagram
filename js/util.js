@@ -97,6 +97,8 @@
       node.style.backgroundColor = 'red';
       node.style.fontSize = '30px';
 
+      node.classList.add('error-alert');
+
       node.textContent = errorMessage;
       document.body.insertAdjacentElement('afterbegin', node);
     }

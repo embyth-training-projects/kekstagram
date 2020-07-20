@@ -25,6 +25,9 @@
   var inputHashtags = window.imageUpload.querySelector('.text__hashtags');
   var commentTextarea = window.imageUpload.querySelector('.text__description');
 
+  // Допустимые разрешения фотографий
+  var FILE_TYPES = ['gif', 'jpeg', 'jpg', 'png'];
+
   // Обработчик изменения примененного эффекта
   function listEffectChangeHandler(evt) {
     var effectName = evt.target.value;
@@ -47,6 +50,32 @@
     var currentScale = parseInt(inputScaleValue.value, 10);
     window.resizeImage(currentScale);
     window.disableScaleButtons();
+  }
+
+  // Обработчик отображения локальной фотографии
+  function fileReaderHandler() {
+    var file = imageUploadInput.files[0];
+    var fileName = file.name.toLowerCase();
+
+    var matches = FILE_TYPES.some(function (item) {
+      return fileName.endsWith(item);
+    });
+
+    var reader = new FileReader();
+
+    if (matches) {
+      reader.addEventListener('load', function () {
+        imageUploadPreview.src = reader.result;
+      });
+
+      reader.readAsDataURL(file);
+    } else {
+      window.util.showError('Ошибка при чтении файла: ' + fileName);
+      setTimeout(function () {
+        document.querySelector('.error-alert').remove();
+      }, 5000);
+      uploadFileCloseHandler();
+    }
   }
 
   // Закрыть окно при нажатии кнопки Esc
@@ -90,6 +119,7 @@
     window.util.showElement(imageUploadOverlay);
     window.util.hideElement(blockEffectLevel);
     window.util.hideBodyScroll();
+    fileReaderHandler();
 
     document.addEventListener('keydown', uploadImageEscPressHandler);
     pinEffectLevel.addEventListener('mousedown', window.moveEffectSlider);
