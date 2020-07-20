@@ -23,6 +23,10 @@
     },
     GALLERY: {
       NEW_QUANTITY: 10
+    },
+    PREVIEW: {
+      COMMENTS_DEFAULT_AMOUNT: 5,
+      COMMENTS_LOAD_AMOUNT: 5
     }
   };
 

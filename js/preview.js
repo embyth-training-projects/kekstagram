@@ -3,50 +3,71 @@
 (function () {
   // Получаем элементы полноэкранного изображения
   var bigPicture = document.querySelector('.big-picture');
-  var commentElements = bigPicture.querySelector('.social__comments');
-  var commentElement = commentElements.querySelector('.social__comment');
   var bigPictureCloseButton = bigPicture.querySelector('.big-picture__cancel');
   var bigPictureTextInput = bigPicture.querySelector('.social__footer-text');
   var pictureListElements = document.querySelector('.pictures');
 
-  // Удаляем ненужные DOM элементы
-  var clearElements = function (element) {
-    while (element.firstChild) {
-      element.removeChild(element.firstChild);
-    }
-  };
+  // Получаем элементы комментариев
+  var commentElements = document.querySelector('.social__comments');
+  var commentElement = commentElements.querySelector('.social__comment');
+  var loadCommentsButton = document.querySelector('.social__comments-loader');
+  var countCommentsField = document.querySelector('.social__comment-count');
 
-  // Задаем информацию полноэкранному изображению
-  var setBigPicture = function (picture) {
-    var fragment = document.createDocumentFragment();
-
-    bigPicture.querySelector('img').src = picture.url; // Указываем путь к фото
-    bigPicture.querySelector('.likes-count').textContent = picture.likes; // Показываем количество лайков
-    bigPicture.querySelector('.comments-count').textContent = picture.comments.length; // Показываем количество комментариев
-    bigPicture.querySelector('.social__caption').textContent = picture.description; // Показываем описание к фото
-
-    picture.comments.forEach(function (item) { // Для каждого комментария создаем фрагмент и заполняем его информацией из массива
-      fragment.appendChild(setCommentData(item));
-    });
-
-    clearElements(commentElements); // Очищаем ненужные комментарии
-    commentElements.appendChild(fragment); // Вставляем в разметку новые комментарии
+  // Количество комментариев
+  var commentsQuantity = {
+    default: window.CONSTANTS.PREVIEW.COMMENTS_DEFAULT_AMOUNT,
+    load: window.CONSTANTS.PREVIEW.COMMENTS_LOAD_AMOUNT,
+    rendered: window.CONSTANTS.PREVIEW.COMMENTS_DEFAULT_AMOUNT
   };
 
   // Отрисовка полноэкранного изображения
-  var initBigPicture = function (photo) {
+  function initBigPicture(photo) {
     var index = window.photoData.findIndex(function (item) {
       return item.url === photo.querySelector('img').getAttribute('src');
     });
 
-    setBigPicture(window.photoData[index]);
+    window.picture = window.photoData[index];
 
-    bigPicture.querySelector('.social__comment-count').classList.add('visually-hidden'); // Скрываем счётчик комментариев
-    bigPicture.querySelector('.social__comments-loader').classList.add('visually-hidden'); // Скрываем кнопку "показать больше"
-  };
+    bigPicture.querySelector('img').src = window.picture.url; // Указываем путь к фото
+    bigPicture.querySelector('.likes-count').textContent = window.picture.likes; // Показываем количество лайков
+    bigPicture.querySelector('.comments-count').textContent = window.picture.comments.length; // Показываем количество комментариев
+    bigPicture.querySelector('.social__caption').textContent = window.picture.description; // Показываем описание к фото
+
+    commentsQuantity.rendered = commentsQuantity.default;
+    renderComments(window.picture.comments, commentsQuantity.default);
+  }
+
+  // Отрисовка комментария
+  function renderComments(array, quantity) {
+    clearElements(commentElements); // Очищаем ненужные комментарии
+
+    var fragment = document.createDocumentFragment();
+    quantity = (quantity > array.length) ? array.length : quantity;
+
+    for (var i = 0; i < quantity; i++) {
+      fragment.appendChild(setCommentData(array[i]));
+    }
+
+    commentElements.appendChild(fragment); // Вставляем в разметку новые комментарии
+
+    updateCommentsCounter(array.length, quantity);
+
+    if (array.length <= quantity) {
+      window.util.hideElement(loadCommentsButton);
+    } else {
+      window.util.showElement(loadCommentsButton);
+    }
+  }
+
+  // Удаляем ненужные DOM элементы
+  function clearElements(element) {
+    while (element.firstChild) {
+      element.removeChild(element.firstChild);
+    }
+  }
 
   // Заполняем комментарии из массива
-  var setCommentData = function (comment) {
+  function setCommentData(comment) {
     var element = commentElement.cloneNode(true);
 
     element.querySelector('.social__picture').src = comment.avatar;
@@ -54,10 +75,15 @@
     element.querySelector('.social__text').textContent = comment.message;
 
     return element;
-  };
+  }
+
+  // Обновление счётчика комментариев
+  function updateCommentsCounter(length, count) {
+    countCommentsField.innerHTML = count + ' из ' + '<span class="comments-count">' + length + '</span>' + ' комментариев';
+  }
 
   // Открыть окно при клике
-  var openBigPictureOnClickHandler = function (evt) {
+  function openBigPictureOnClickHandler(evt) {
     var target = evt.target;
 
     while (target.parentNode !== evt.currentTarget) {
@@ -68,40 +94,48 @@
         return;
       }
     }
-  };
+  }
+
+  // Загружаем комментарии
+  function loadCommentsClickHandler(evt) {
+    evt.preventDefault();
+
+    commentsQuantity.rendered += commentsQuantity.load;
+    renderComments(window.picture.comments, commentsQuantity.rendered);
+  }
 
   // Закрыть окно при нажатии кнопки Enter
-  var closeBigPictureOnKeyDown = function (evt) {
+  function closeBigPictureOnKeyDown(evt) {
     window.util.isEnterKey(evt, bigPictureCloseClickHandler);
-  };
+  }
 
   // Закрыть окно при нажатии кнопки Esc
-  var closeBigPictureOnPressEsc = function (evt) {
+  function closeBigPictureOnPressEsc(evt) {
     window.util.isEscKey(evt, bigPictureCloseClickHandler);
-  };
+  }
 
   // Обработчик кнопки зарытия полноэкранного изображения
-  var bigPictureButtonCloseHandler = function () {
+  function bigPictureButtonCloseHandler() {
     bigPictureCloseClickHandler();
-  };
+  }
 
   // Обработчик состояния фокуса в поле инпута комментария
-  var bigPictureInputFocusHandler = function () {
+  function bigPictureInputFocusHandler() {
     document.removeEventListener('keydown', closeBigPictureOnPressEsc);
-  };
+  }
 
   // Обработчик выхода из фокуса поля инпута комментария
-  var bigPictureInputBlurHandler = function () {
+  function bigPictureInputBlurHandler() {
     document.addEventListener('keydown', closeBigPictureOnPressEsc);
-  };
+  }
 
   // Открыть окно при нажатии кнопки Enter
-  var openBigPictureOnKeyDown = function (evt) {
+  function openBigPictureOnKeyDown(evt) {
     window.util.isEnterKey(evt, bigPictureOpenClickHandler);
-  };
+  }
 
   // Открывает попап с полноэкранным изображением
-  var bigPictureOpenClickHandler = function () {
+  function bigPictureOpenClickHandler() {
     window.util.showElement(bigPicture);
     window.util.hideBodyScroll();
 
@@ -113,10 +147,11 @@
     bigPictureCloseButton.addEventListener('keydown', closeBigPictureOnKeyDown);
     bigPictureTextInput.addEventListener('focus', bigPictureInputFocusHandler);
     bigPictureTextInput.addEventListener('blur', bigPictureInputBlurHandler);
-  };
+    loadCommentsButton.addEventListener('click', loadCommentsClickHandler);
+  }
 
   // Закрывает попап с полноэкранным изображением
-  var bigPictureCloseClickHandler = function () {
+  function bigPictureCloseClickHandler() {
     window.util.hideElement(bigPicture);
     window.util.showBodyScroll();
 
@@ -128,7 +163,8 @@
     bigPictureCloseButton.removeEventListener('keydown', closeBigPictureOnKeyDown);
     bigPictureTextInput.removeEventListener('focus', bigPictureInputFocusHandler);
     bigPictureTextInput.removeEventListener('blur', bigPictureInputBlurHandler);
-  };
+    loadCommentsButton.removeEventListener('click', loadCommentsClickHandler);
+  }
 
   pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
   pictureListElements.addEventListener('click', openBigPictureOnClickHandler);
