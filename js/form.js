@@ -26,7 +26,7 @@
   var commentTextarea = window.imageUpload.querySelector('.text__description');
 
   // Обработчик изменения примененного эффекта
-  var listEffectChangeHandler = function (evt) {
+  function listEffectChangeHandler(evt) {
     var effectName = evt.target.value;
 
     var depthEffect = window.CONSTANTS.IMAGE_UPLOAD.DEPTH_PARAMS;
@@ -47,46 +47,46 @@
     var currentScale = parseInt(inputScaleValue.value, 10);
     window.resizeImage(currentScale);
     window.disableScaleButtons();
-  };
+  }
 
   // Закрыть окно при нажатии кнопки Esc
-  var uploadImageEscPressHandler = function (evt) {
+  function uploadImageEscPressHandler(evt) {
     window.util.isEscKey(evt, uploadFileCloseHandler);
-  };
+  }
 
   // Обработчик фокуса ввода хэштегов
-  var inputHashtagsFocusHandler = function () {
+  function inputHashtagsFocusHandler() {
     document.removeEventListener('keydown', uploadImageEscPressHandler);
-  };
+  }
 
   // Обработчик выхода из фокуса ввода хэштегов
-  var inputHashtagsBlurHandler = function () {
+  function inputHashtagsBlurHandler() {
     document.addEventListener('keydown', uploadImageEscPressHandler);
-  };
+  }
 
   // Обработчик фокуса ввода комментария
-  var commentTextareaFocusHandler = function () {
+  function commentTextareaFocusHandler() {
     document.removeEventListener('keydown', uploadImageEscPressHandler);
-  };
+  }
 
   // Обработчик выхода из фокуса ввода комментария
-  var commentTextareaBlurHandler = function () {
+  function commentTextareaBlurHandler() {
     document.addEventListener('keydown', uploadImageEscPressHandler);
-  };
+  }
 
   // Обработчик кнопки закрытия редактирования фотографии
-  var uploadImageCloseButtonClickHandler = function () {
+  function uploadImageCloseButtonClickHandler() {
     uploadFileCloseHandler();
-  };
+  }
 
   // Обработчик отправки формы загрузки изображения
-  var uploadFormSubmitHandler = function (evt) {
+  function uploadFormSubmitHandler(evt) {
     evt.preventDefault();
     window.backend.save(new FormData(imageUploadForm), uploadFileCloseHandler, window.util.showError);
-  };
+  }
 
   // Открывает форму редактирования изображения
-  var uploadImageChangeHandler = function () {
+  function uploadImageChangeHandler() {
     window.util.showElement(imageUploadOverlay);
     window.util.hideElement(blockEffectLevel);
     window.util.hideBodyScroll();
@@ -108,10 +108,10 @@
 
     window.resizeImage(window.CONSTANTS.IMAGE_UPLOAD.SCALE_PARAMS.DEFAULT);
     window.disableScaleButtons();
-  };
+  }
 
   // Закрывает форму редактирования изображения
-  var uploadFileCloseHandler = function () {
+  function uploadFileCloseHandler() {
     window.util.hideElement(imageUploadOverlay);
     window.util.showBodyScroll();
 
@@ -131,7 +131,7 @@
     imageUploadForm.removeEventListener('submit', uploadFormSubmitHandler);
 
     imageUploadForm.reset();
-  };
+  }
 
   imageUploadInput.addEventListener('change', uploadImageChangeHandler);
 })();

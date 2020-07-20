@@ -28,9 +28,9 @@
   };
 
   // Проверяет на уникальность хэштег
-  var isHashtagUnique = function (item, index, items) {
+  function isHashtagUnique(item, index, items) {
     return items.indexOf(item) === index;
-  };
+  }
 
   // Обработчик ввода хэштегов
   window.inputHashtagsInputHandler = function () {

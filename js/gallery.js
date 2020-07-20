@@ -14,7 +14,7 @@
   var newFilterButton = filterBlock.querySelector('#filter-new');
 
   // Создаем элемент из шаблона и присваиваем ему информацию из массива
-  var createPictureElement = function (picture) {
+  function createPictureElement(picture) {
     var pictureNode = pictureElementTemplate.cloneNode(true);
 
     pictureNode.querySelector('.picture__img').src = picture.url;
@@ -22,10 +22,10 @@
     pictureNode.querySelector('.picture__comments').textContent = picture.comments.length;
 
     return pictureNode;
-  };
+  }
 
   // Отрисовывает фотографии
-  var renderPhotos = function (photos) {
+  function renderPhotos(photos) {
     var fragment = document.createDocumentFragment();
 
     photos.forEach(function (item) {
@@ -33,17 +33,17 @@
     });
 
     pictureElement.appendChild(fragment);
-  };
+  }
 
   // Обработчик загрузки данных для фото с сервера
-  var onLoad = function (data) {
+  function onLoad(data) {
     window.photoData = data;
     // Выполняем отрисовку фотографий
     renderPhotos(window.photoData);
 
     // Показываем блок фильтров
     document.querySelector('.img-filters').classList.remove('img-filters--inactive');
-  };
+  }
 
   // Генирируем данные для фотографий из ответа сервера
   window.backend.load(onLoad, window.util.showError);
