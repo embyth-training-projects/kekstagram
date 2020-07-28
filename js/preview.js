@@ -15,26 +15,19 @@
 
   // Количество комментариев
   var commentsQuantity = {
-    default: window.CONSTANTS.PREVIEW.COMMENTS_DEFAULT_AMOUNT,
-    load: window.CONSTANTS.PREVIEW.COMMENTS_LOAD_AMOUNT,
-    rendered: window.CONSTANTS.PREVIEW.COMMENTS_DEFAULT_AMOUNT
+    DEFAULT: 5,
+    LOAD: 5
   };
 
   // Отрисовка полноэкранного изображения
   function initBigPicture(photo) {
-    var index = window.photoData.findIndex(function (item) {
-      return item.url === photo.querySelector('img').getAttribute('src');
-    });
+    bigPicture.querySelector('img').src = photo.url; // Указываем путь к фото
+    bigPicture.querySelector('.likes-count').textContent = photo.likes; // Показываем количество лайков
+    bigPicture.querySelector('.comments-count').textContent = photo.comments.length; // Показываем количество комментариев
+    bigPicture.querySelector('.social__caption').textContent = photo.description; // Показываем описание к фото
 
-    window.picture = window.photoData[index];
-
-    bigPicture.querySelector('img').src = window.picture.url; // Указываем путь к фото
-    bigPicture.querySelector('.likes-count').textContent = window.picture.likes; // Показываем количество лайков
-    bigPicture.querySelector('.comments-count').textContent = window.picture.comments.length; // Показываем количество комментариев
-    bigPicture.querySelector('.social__caption').textContent = window.picture.description; // Показываем описание к фото
-
-    commentsQuantity.rendered = commentsQuantity.default;
-    renderComments(window.picture.comments, commentsQuantity.default);
+    commentsQuantity.rendered = commentsQuantity.DEFAULT;
+    renderComments(photo.comments, commentsQuantity.DEFAULT);
   }
 
   // Отрисовка комментария
@@ -84,24 +77,26 @@
 
   // Открыть окно при клике
   function openBigPictureOnClickHandler(evt) {
-    var target = evt.target;
-
-    while (target.parentNode !== evt.currentTarget) {
-      target = target.parentNode;
-      if (target.classList.contains('picture')) {
-        initBigPicture(target);
-        bigPictureOpenClickHandler();
-        return;
-      }
+    var photoNode = evt.target.closest('.picture');
+    if (!photoNode) {
+      return;
     }
+
+    window.photoData.forEach(function (photo) {
+      if (parseInt(photoNode.getAttribute('data-photo'), 10) === photo.id) {
+        window.currentPreview = photo;
+        initBigPicture(photo);
+        bigPictureOpenClickHandler();
+      }
+    });
   }
 
   // Загружаем комментарии
   function loadCommentsClickHandler(evt) {
     evt.preventDefault();
 
-    commentsQuantity.rendered += commentsQuantity.load;
-    renderComments(window.picture.comments, commentsQuantity.rendered);
+    commentsQuantity.rendered += commentsQuantity.LOAD;
+    renderComments(window.currentPreview.comments, commentsQuantity.rendered);
   }
 
   // Закрыть окно при нажатии кнопки Enter
@@ -131,7 +126,9 @@
 
   // Открыть окно при нажатии кнопки Enter
   function openBigPictureOnKeyDown(evt) {
-    window.util.isEnterKey(evt, bigPictureOpenClickHandler);
+    if (window.CONSTANTS.KEYCODES.ENTER === evt.keyCode) {
+      openBigPictureOnClickHandler(evt);
+    }
   }
 
   // Открывает попап с полноэкранным изображением
@@ -166,6 +163,21 @@
     loadCommentsButton.removeEventListener('click', loadCommentsClickHandler);
   }
 
-  pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
-  pictureListElements.addEventListener('click', openBigPictureOnClickHandler);
+  // Функция активации полноэкранного режима
+  function activate() {
+    pictureListElements.addEventListener('keydown', openBigPictureOnKeyDown);
+    pictureListElements.addEventListener('click', openBigPictureOnClickHandler);
+  }
+
+  // Функция отключения полноэкранного режима
+  function disable() {
+    pictureListElements.removeEventListener('keydown', openBigPictureOnKeyDown);
+    pictureListElements.removeEventListener('click', openBigPictureOnClickHandler);
+  }
+
+  // Передаём функции в глобальную область видимости
+  window.preview = {
+    activate: activate,
+    disable: disable
+  };
 })();
