@@ -2,81 +2,17 @@
 
 (function () {
   // Получаем элементы редактирования изображения
-  window.imageUpload = document.querySelector('.img-upload');
-  var imageUploadForm = window.imageUpload.querySelector('#upload-select-image');
-  var imageUploadInput = window.imageUpload.querySelector('#upload-file');
-  var imageUploadOverlay = window.imageUpload.querySelector('.img-upload__overlay');
-  var imageUploadCloseButton = window.imageUpload.querySelector('.img-upload__cancel');
-  var imageUploadPreview = window.imageUpload.querySelector('.img-upload__preview img');
-
-  // Получаем элементы управления масштабом изображения
-  var buttonScaleDecrease = window.imageUpload.querySelector('.scale__control--smaller');
-  var buttonScaleIncrease = window.imageUpload.querySelector('.scale__control--bigger');
-  var inputScaleValue = window.imageUpload.querySelector('.scale__control--value');
-
-  // Получаем элементы настроек эффекта
-  var blockEffectLevel = window.imageUpload.querySelector('.effect-level');
-  var inputEffectValue = blockEffectLevel.querySelector('.effect-level__value');
-  var pinEffectLevel = blockEffectLevel.querySelector('.effect-level__pin');
-  var depthEffectLevel = blockEffectLevel.querySelector('.effect-level__depth');
-  var listEffect = window.imageUpload.querySelector('.effects__list');
+  var imageUploadNode = document.querySelector('.img-upload');
+  var imageUploadForm = imageUploadNode.querySelector('#upload-select-image');
+  var imageUploadInput = imageUploadNode.querySelector('#upload-file');
+  var imageUploadOverlay = imageUploadNode.querySelector('.img-upload__overlay');
+  var imageUploadCloseButton = imageUploadNode.querySelector('.img-upload__cancel');
+  var imageUploadPreview = imageUploadNode.querySelector('.img-upload__preview img');
+  var blockEffectLevel = imageUploadNode.querySelector('.effect-level');
 
   // Получаем элементы ввода текста
-  var inputHashtags = window.imageUpload.querySelector('.text__hashtags');
-  var commentTextarea = window.imageUpload.querySelector('.text__description');
-
-  // Допустимые разрешения фотографий
-  var FILE_TYPES = ['gif', 'jpeg', 'jpg', 'png'];
-
-  // Обработчик изменения примененного эффекта
-  function listEffectChangeHandler(evt) {
-    var effectName = evt.target.value;
-
-    var depthEffect = window.CONSTANTS.IMAGE_UPLOAD.DEPTH_PARAMS;
-    depthEffectLevel.style.width = depthEffect.DEFAULT + '%';
-    pinEffectLevel.style.left = depthEffect.DEFAULT + '%';
-    inputEffectValue.value = depthEffect.DEFAULT;
-    imageUploadPreview.className = '';
-    imageUploadPreview.style = '';
-
-    if (effectName === 'none') {
-      window.util.hideElement(blockEffectLevel);
-    } else {
-      window.util.showElement(blockEffectLevel);
-      imageUploadPreview.classList.add('effects__preview--' + effectName);
-      window.setFilter(imageUploadPreview, depthEffect.DEFAULT);
-    }
-
-    var currentScale = parseInt(inputScaleValue.value, 10);
-    window.resizeImage(currentScale);
-    window.disableScaleButtons();
-  }
-
-  // Обработчик отображения локальной фотографии
-  function fileReaderHandler() {
-    var file = imageUploadInput.files[0];
-    var fileName = file.name.toLowerCase();
-
-    var matches = FILE_TYPES.some(function (item) {
-      return fileName.endsWith(item);
-    });
-
-    var reader = new FileReader();
-
-    if (matches) {
-      reader.addEventListener('load', function () {
-        imageUploadPreview.src = reader.result;
-      });
-
-      reader.readAsDataURL(file);
-    } else {
-      window.util.showError('Ошибка при чтении файла: ' + fileName);
-      setTimeout(function () {
-        document.querySelector('.error-alert').remove();
-      }, 5000);
-      uploadFileCloseHandler();
-    }
-  }
+  var inputHashtags = imageUploadNode.querySelector('.text__hashtags');
+  var commentTextarea = imageUploadNode.querySelector('.text__description');
 
   // Закрыть окно при нажатии кнопки Esc
   function uploadImageEscPressHandler(evt) {
@@ -119,43 +55,43 @@
     window.util.showElement(imageUploadOverlay);
     window.util.hideElement(blockEffectLevel);
     window.util.hideBodyScroll();
-    fileReaderHandler();
+    window.file.upload(imageUploadInput, imageUploadPreview, uploadFileCloseHandler);
+    window.scale.activate();
+    window.scale.hideControls();
+    window.scale.resize(window.scale.Params.DEFAULT);
+    window.effect.activate();
+    window.effect.reset();
+    window.validation.activate();
+
+    window.preview.disable();
 
     document.addEventListener('keydown', uploadImageEscPressHandler);
-    pinEffectLevel.addEventListener('mousedown', window.moveEffectSlider);
     imageUploadCloseButton.addEventListener('click', uploadImageCloseButtonClickHandler);
-    buttonScaleDecrease.addEventListener('click', window.buttonDecreaseClickHandler);
-    buttonScaleIncrease.addEventListener('click', window.buttonIncreaseClickHandler);
-    listEffect.addEventListener('change', listEffectChangeHandler);
-    pinEffectLevel.addEventListener('mouseup', window.pinEffectLevelMouseUpHandler);
-    inputHashtags.addEventListener('input', window.inputHashtagsInputHandler);
+
     inputHashtags.addEventListener('focus', inputHashtagsFocusHandler);
     inputHashtags.addEventListener('blur', inputHashtagsBlurHandler);
-    commentTextarea.addEventListener('input', window.commentTextareaInputHandler);
     commentTextarea.addEventListener('focus', commentTextareaFocusHandler);
     commentTextarea.addEventListener('blur', commentTextareaBlurHandler);
     imageUploadForm.addEventListener('submit', uploadFormSubmitHandler);
 
-    window.resizeImage(window.CONSTANTS.IMAGE_UPLOAD.SCALE_PARAMS.DEFAULT);
-    window.disableScaleButtons();
+    imageUploadInput.blur();
   }
 
   // Закрывает форму редактирования изображения
   function uploadFileCloseHandler() {
     window.util.hideElement(imageUploadOverlay);
     window.util.showBodyScroll();
+    window.scale.disable();
+    window.effect.disable();
+    window.validation.disable();
+
+    window.preview.activate();
 
     document.removeEventListener('keydown', uploadImageEscPressHandler);
-    pinEffectLevel.removeEventListener('mousedown', window.moveEffectSlider);
     imageUploadCloseButton.removeEventListener('click', uploadImageCloseButtonClickHandler);
-    buttonScaleDecrease.removeEventListener('click', window.buttonDecreaseClickHandler);
-    buttonScaleIncrease.removeEventListener('click', window.buttonIncreaseClickHandler);
-    listEffect.removeEventListener('change', listEffectChangeHandler);
-    pinEffectLevel.removeEventListener('mouseup', window.pinEffectLevelMouseUpHandler);
-    inputHashtags.removeEventListener('input', window.inputHashtagsInputHandler);
+
     inputHashtags.removeEventListener('focus', inputHashtagsFocusHandler);
     inputHashtags.removeEventListener('blur', inputHashtagsBlurHandler);
-    commentTextarea.removeEventListener('input', window.commentTextareaInputHandler);
     commentTextarea.removeEventListener('focus', commentTextareaFocusHandler);
     commentTextarea.removeEventListener('blur', commentTextareaBlurHandler);
     imageUploadForm.removeEventListener('submit', uploadFormSubmitHandler);
@@ -163,5 +99,13 @@
     imageUploadForm.reset();
   }
 
-  imageUploadInput.addEventListener('change', uploadImageChangeHandler);
+  // Активирует форму загрузки фото
+  function activate() {
+    imageUploadInput.addEventListener('change', uploadImageChangeHandler);
+  }
+
+  // Передаём функции в глобальную область видимости
+  window.form = {
+    activate: activate
+  };
 })();

@@ -8,25 +8,8 @@
       ESC: 27,
       ENTER: 13
     },
-    IMAGE_UPLOAD: {
-      SCALE_PARAMS: {
-        MIN: 25,
-        MAX: 100,
-        DEFAULT: 100,
-        STEP: 25
-      },
-      DEPTH_PARAMS: {
-        MIN: 0,
-        MAX: 100,
-        DEFAULT: 75
-      }
-    },
-    GALLERY: {
-      NEW_QUANTITY: 10
-    },
-    PREVIEW: {
-      COMMENTS_DEFAULT_AMOUNT: 5,
-      COMMENTS_LOAD_AMOUNT: 5
+    PHOTOS: {
+      QUANTITY: 25
     }
   };
 
