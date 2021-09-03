@@ -1,7 +1,7 @@
 'use strict';
 
 (function () {
-  var URL_SAVE = 'https://javascript.pages.academy/kekstagram';
+  var URL_SAVE = 'https://21.javascript.pages.academy/kekstagram';
   var URL_LOAD = URL_SAVE + '/data';
 
   function addXHR(timeout, onLoad, onError) {
@@ -54,6 +54,6 @@
 
   window.backend = {
     load: load,
-    save: save
+    save: save,
   };
 })();
